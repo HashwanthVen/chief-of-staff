@@ -1,0 +1,41 @@
+{
+  "servers": {
+    "workiq": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@microsoft/workiq", "mcp"]
+    },
+    "mcp_MailTools": {
+      "type": "http",
+      "url": "https://agent365.svc.cloud.microsoft/mcp/environments/${input:environment_id}/servers/mcp_MailTools"
+    },
+    "mcp_CalendarTools": {
+      "type": "http",
+      "url": "https://agent365.svc.cloud.microsoft/mcp/environments/${input:environment_id}/servers/mcp_CalendarTools"
+    },
+    "mcp_TeamsServer": {
+      "type": "http",
+      "url": "https://agent365.svc.cloud.microsoft/mcp/environments/${input:environment_id}/servers/mcp_TeamsServer"
+    },
+    "mcp_M365Copilot": {
+      "type": "http",
+      "url": "https://agent365.svc.cloud.microsoft/mcp/environments/${input:environment_id}/servers/mcp_M365Copilot"
+    },
+    "mcp_WordServer": {
+      "type": "http",
+      "url": "https://agent365.svc.cloud.microsoft/mcp/environments/${input:environment_id}/servers/mcp_WordServer"
+    },
+    "microsoftdocs/mcp": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  },
+  "inputs": [
+    {
+      "id": "environment_id",
+      "type": "promptString",
+      "description": "Power Platform Environment ID -- find it at https://admin.powerplatform.microsoft.com → Environments → your env → copy the GUID from the URL",
+      "password": false
+    }
+  ]
+}

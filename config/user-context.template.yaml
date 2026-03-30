@@ -1,0 +1,45 @@
+# =============================================================================
+# User Context Configuration
+# =============================================================================
+# Copy this file to config/user-context.yaml and fill in your values.
+# config/user-context.yaml is gitignored and will NOT be committed.
+#
+# This is the single source of truth for all personal context used by the
+# Chief of Staff agent. It reads this file at runtime to resolve names,
+# emails, status email recipients, and team context.
+# =============================================================================
+
+version: 1.0
+
+# -- Personal Identity (required) -----------------------------------------
+user:
+  displayName: "<YOUR_DISPLAY_NAME>"            # e.g., "Jane Doe"
+  email: "<YOUR_EMAIL>"                         # e.g., "janedoe@contoso.com"
+
+# -- Status Email Configuration (recommended) ------------------------------
+statusEmail:
+  recipient: "<MANAGER_EMAIL>"                  # e.g., "manager@contoso.com"
+  subjectPrefix: "<YOUR_NAME>"                  # Used in: "<Name>: Daily Status Update as of ..."
+  autoSend: true
+  sections:
+    - name: "<SECTION_1_NAME>"                  # e.g., "Engineering POD"
+      bulletCount: 6
+      topics:
+        - "<topic_1>"                           # e.g., "data pipeline optimization"
+        - "<topic_2>"                           # e.g., "dashboard development"
+    - name: "<SECTION_2_NAME>"                  # e.g., "Security POD"
+      bulletCount: 6
+      topics:
+        - "<topic_1>"
+        - "<topic_2>"
+
+# -- Team Members (helps agents mention people) ----------------------------
+team:
+  members:
+    - "<MEMBER_1>"                              # e.g., "Alice"
+    - "<MEMBER_2>"                              # e.g., "Bob"
+    - "<MEMBER_3>"                              # e.g., "Carol"
+
+# -- Infrastructure (required for M365 MCP servers) ------------------------
+infrastructure:
+  powerPlatformEnvironmentId: "<GUID>"          # From Power Platform admin center

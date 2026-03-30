@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/settings.json
+*.swp
+*.swo
+
+# User-specific config (created from template)
+config/user-context.yaml
+
+# MCP config with your environment ID (created from template)
+.vscode/mcp.json
