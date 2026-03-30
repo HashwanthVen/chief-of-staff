@@ -24,7 +24,7 @@
 ## 2. Clone & Setup
 
 ```powershell
-git clone https://github.com/v-arloonker/chief-of-staff.git
+git clone https://github.com/HashwanthVen/chief-of-staff.git
 cd chief-of-staff
 .\setup.ps1
 code .

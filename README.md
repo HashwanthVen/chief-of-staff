@@ -7,7 +7,7 @@ searching your work history. All from the Copilot Chat panel.
 ## 30-Second Setup
 
 ```powershell
-git clone https://github.com/v-arloonker/chief-of-staff.git
+git clone https://github.com/HashwanthVen/chief-of-staff.git
 cd chief-of-staff
 .\setup.ps1
 code .
@@ -119,7 +119,7 @@ chief-of-staff/
 
 ## Credits
 
-Extracted from [WorkFAST](https://github.com/v-arloonker/WorkFAST) -- a multi-agent orchestration
+Extracted from [WorkFAST](https://github.com/HashwanthVen/WorkFAST) -- a multi-agent orchestration
 system for Fabric DevOps, Databricks, ADO, and M365 productivity. This repo is the standalone
 Chief of Staff component, optimized for easy setup.
 
