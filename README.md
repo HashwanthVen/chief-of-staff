@@ -118,12 +118,6 @@ chief-of-staff/
 └── README.md                            # You are here
 ```
 
-## Credits
-
-Extracted from [WorkFAST](https://github.com/HashwanthVen/WorkFAST) -- a multi-agent orchestration
-system for Fabric DevOps, Databricks, ADO, and M365 productivity. This repo is the standalone
-Chief of Staff component, optimized for easy setup.
-
 ## License
 
 MIT
