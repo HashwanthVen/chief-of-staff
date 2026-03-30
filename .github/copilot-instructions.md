@@ -1,127 +1,173 @@
 # Copilot Instructions -- Chief of Staff Agent
 
-This repository is a **Chief of Staff** personal productivity agent for GitHub Copilot Chat.
-It connects to your Microsoft 365 work context (Outlook, Teams, Calendar, Word) via MCP servers
-and lets you triage, draft status emails, prep for meetings, and search your work history --
-all from the Copilot Chat panel in VS Code.
+> **YOU (GitHub Copilot) ARE THE INSTALLER.** When a user opens this workspace -- or asks
+> anything like "set up", "help me get started", "configure this", or even just "hi" --
+> YOU run the full setup below automatically. The user is NON-TECHNICAL. Do not ask them
+> to run terminal commands. YOU run every command. YOU edit every file. The user only
+> answers simple questions (their name, their manager's email) and clicks "Allow" on
+> popups that appear.
 
-## Setup Instructions (for GitHub Copilot)
+---
 
-When a user asks you to help them set up this repo, follow these steps **exactly**:
+## AUTO-SETUP FLOW (execute this top-to-bottom)
 
-### Step 1: Check Prerequisites
+### Phase 1: Prerequisites (you run these silently)
 
+Run in the terminal -- do NOT ask the user to do this:
 ```powershell
-node --version   # Must be 18+
-npm --version    # Comes with Node.js
+node --version
+npm --version
 ```
 
-If Node.js is missing, tell the user to install from https://nodejs.org (LTS).
+- If Node.js 18+ is found: proceed silently.
+- If Node.js is MISSING: tell the user EXACTLY this:
+  > "I need Node.js to run. Please go to https://nodejs.org, click the big green
+  > **LTS** button, install it (just click Next through the installer), then
+  > restart VS Code. I'll take it from there."
+  Then STOP. Do not proceed until Node.js is available.
 
-### Step 2: Run Setup Script
+### Phase 2: Run Setup Script (you run this)
 
 ```powershell
 .\setup.ps1
 ```
 
-This script:
-1. Validates Node.js and npm are installed
-2. Pre-caches the WorkIQ npm package (`@microsoft/workiq`)
-3. Creates `.vscode/mcp.json` from the template (if not present)
-4. Creates `config/user-context.yaml` from the template (if not present)
-5. Checks for required VS Code extensions
+This creates `.vscode/mcp.json` and `config/user-context.yaml` from templates.
+If it succeeds, tell the user: "Setup script done. Now I need a few things from you."
 
-### Step 3: Configure User Context
+### Phase 3: Ask the User 4 Simple Questions
 
-Help the user fill in `config/user-context.yaml`:
+Ask these in a SINGLE message, numbered. Do NOT explain why you need them:
 
-```yaml
-user:
-  displayName: "<Their name>"
-  email: "<Their email>"
+> I need 4 things to configure your assistant:
+>
+> 1. **Your name** (e.g., "Jane Doe")
+> 2. **Your email** (e.g., jane@contoso.com)
+> 3. **Your manager's email** (for daily status emails)
+> 4. **Your team/project names** (what do you work on? e.g., "Data Platform, Security Reviews")
 
-statusEmail:
-  recipient: "<Manager email>"
-  subjectPrefix: "<Their name>"
-  sections:
-    - name: "<Team 1>"
-      bulletCount: 6
-      topics: ["<topic1>", "<topic2>"]
-```
+Wait for the user to answer. Then YOU edit `config/user-context.yaml` with their answers.
+Fill in all fields. Generate sensible defaults for anything they didn't mention (bulletCount: 6, autoSend: true).
 
-### Step 4: Find Power Platform Environment ID
+### Phase 4: Power Platform Environment ID
 
-The M365 MCP servers (Mail, Calendar, Teams, Word, M365 Copilot) require a Power Platform
-Environment ID. Help the user find it:
+This is the trickiest part. The M365 MCP servers need this ID. Walk the user through it with EXACT visual steps:
 
-1. Go to https://admin.powerplatform.microsoft.com
-2. Click "Environments" in the left nav
-3. Click on their environment (usually the default one)
-4. Copy the Environment ID (GUID) from the URL or details panel
+> Almost done! I need one more thing -- your **Power Platform Environment ID**.
+> This connects me to your Outlook, Teams, and Calendar.
+>
+> Here's how to find it (takes 30 seconds):
+>
+> 1. Open this link: https://admin.powerplatform.microsoft.com/environments
+> 2. You'll see a list of environments. Click on the one that says **"(default)"** or has your company name
+> 3. Look at the URL in your browser -- it will look like:
+>    `https://admin.powerplatform.microsoft.com/environments/abcd1234-ef56-7890-abcd-ef1234567890/hub`
+> 4. Copy that long ID between `/environments/` and `/hub`
+>    (the part that looks like `abcd1234-ef56-7890-abcd-ef1234567890`)
+> 5. Paste it here
+>
+> **Can't find it?** If you see "Access denied" or an empty page, ask your IT admin:
+> "What is my Power Platform default environment ID?"
 
-When VS Code prompts for `environment_id`, they paste this GUID.
+When the user provides the GUID, YOU edit `.vscode/mcp.json` -- replace every `${input:environment_id}` with the actual GUID so the user is NEVER prompted again.
 
-### Step 5: Verify MCP Connections
+Here's the replacement you make in `.vscode/mcp.json`:
+- Find: `${input:environment_id}`
+- Replace with: the actual GUID the user gave you
+- Also REMOVE the entire `"inputs"` array since it's no longer needed
 
-After setup, have the user test each MCP server:
+### Phase 5: Verify Everything Works
 
-```
-@chief-of-staff What meetings do I have today?
-```
+Run this test sequence. Do each one and report the result:
 
-If it works, Calendar + WorkIQ are connected. Then test:
-- "Summarize my recent emails" (Mail)
-- "What did [person] say in Teams?" (Teams)
-- "Draft my status email" (Mail send)
+1. Tell the user: "Let me test the connections. This may take 30 seconds on first run."
 
-### MCP Troubleshooting Guide
+2. Try calling WorkIQ:
+   - If it works -> tell the user "WorkIQ connected -- I can search your work context"
+   - If it fails -> see Troubleshooting below
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| WorkIQ returns empty | Not signed into M365 | Run `az login` or sign in via VS Code Microsoft account |
-| M365 servers fail with 401 | Token expired or wrong tenant | `az login --tenant <tenant-id>` |
-| M365 servers fail with 403 | OAuth consent not granted | Look for a VS Code popup asking for consent -- click Allow |
-| "environment_id" prompt keeps appearing | VS Code didn't save the input | Enter the GUID again; it persists per workspace |
-| Mail/Calendar returns no data | Consent popup was dismissed | Restart VS Code, re-open workspace, approve the consent popup |
-| npx command hangs | Firewall or proxy blocking npm | Try `npm config set registry https://registry.npmjs.org/` |
-| Server shows "disconnected" in MCP panel | Package not cached | Run `npx -y @microsoft/workiq --help` in terminal to force download |
+3. Tell the user to try:
+   > Type this in a new chat: **@chief-of-staff What meetings do I have today?**
 
-### How VS Code MCP Servers Work
+4. If it returns calendar data: setup is COMPLETE. Tell the user:
+   > **You're all set!** Here's what you can ask me:
+   >
+   > - **"Daily triage"** -- morning briefing with meetings, emails, and action items
+   > - **"Draft my status email"** -- auto-generates and sends your daily status update
+   > - **"Prep me for my next meeting"** -- agenda, attendees, context, talking points
+   > - **"Summarize my emails"** -- priority email digest
+   > - **"What did Sarah say?"** -- search anyone's Teams/email messages
+   > - **"What changed since yesterday?"** -- catch up on everything you missed
+
+### Phase 5b: Handle OAuth Consent Popups
+
+**IMPORTANT:** When MCP servers first connect, VS Code may show OAuth consent popups.
+Tell the user BEFORE they appear:
+
+> You might see a popup in VS Code or your browser asking you to sign in to Microsoft
+> and approve permissions. **Click "Allow" or "Accept" on every popup you see.**
+> This is normal -- it's connecting to your Outlook, Teams, and Calendar.
+
+If the user says "nothing happened" or "it's empty":
+> Try restarting VS Code (close and reopen). When it opens this folder again,
+> watch for a popup in the bottom-right corner of VS Code asking for permission.
+> Click Allow.
+
+---
+
+## MCP TROUBLESHOOTING (use this when things break)
+
+| User says | What's wrong | What YOU do |
+|-----------|-------------|-------------|
+| "It's not showing my meetings/emails" | OAuth consent not granted | Tell them: "Close VS Code, reopen this folder, and watch for a popup asking for Microsoft sign-in. Click Allow." |
+| "It says unauthorized or 401" | Token expired | Run `az login` in terminal for them, or tell them: "Click the account icon in the bottom-left of VS Code and sign in with your work account" |
+| "It says 403 forbidden" | Missing permissions | Tell them: "Your IT admin may need to approve this app. Forward them this: the app needs Mail.Read, Calendars.Read, Chat.Read, and User.Read permissions." |
+| "The environment ID didn't work" | Wrong GUID | Ask them to go back to https://admin.powerplatform.microsoft.com/environments and look for the GUID in the URL. It's 36 characters with dashes. |
+| "WorkIQ is hanging" | First-time npm download | Tell them: "First run takes about 30-60 seconds to download. Please wait." |
+| "It keeps asking for environment_id" | mcp.json still has the placeholder | YOU open `.vscode/mcp.json` and replace `${input:environment_id}` with the GUID manually |
+| "I don't have Power Platform access" | They don't have an environment | The M365 servers won't work without it. Tell them: "Ask your IT team: 'Do I have a Power Platform environment?' If not, WorkIQ alone still works for searching your emails and meetings." |
+
+---
+
+## HOW MCP SERVERS WORK (for your reference, not the user's)
 
 - `.vscode/mcp.json` defines which MCP servers to start
-- VS Code auto-discovers this file when you open the workspace
-- Servers are started on-demand when a tool is first called
-- `${input:environment_id}` prompts the user once, then remembers the value
-- HTTP-type servers (M365) connect to Microsoft's hosted endpoints
-- stdio-type servers (WorkIQ) run locally via npx
+- VS Code auto-discovers this file when the workspace opens
+- Servers start on-demand when a tool is first invoked
+- HTTP-type servers (Mail, Calendar, Teams, Word, M365 Copilot) connect to Microsoft's hosted endpoints at `agent365.svc.cloud.microsoft`
+- stdio-type server (WorkIQ) runs locally via `npx @microsoft/workiq mcp`
+- WorkIQ is the PRIMARY search tool -- it searches across all M365 signals
+- Mail/Calendar/Teams tools are for WRITE operations and direct access
 
-## Agent Capabilities
+---
 
-The `@chief-of-staff` agent can:
+## AGENT CAPABILITIES (what the @chief-of-staff agent can do)
 
-| Command | What It Does |
-|---------|-------------|
-| "Daily triage" | Morning briefing: meetings, priority emails, risks, action items |
-| "Draft my status email" | Auto-generates status email from M365 signals and sends it |
-| "Prep me for my next meeting" | Agenda, attendees, context, talking points |
+| User says | What happens |
+|-----------|-------------|
+| "Daily triage" | Morning briefing: today's meetings, priority emails, risks, action items |
+| "Draft my status email" | Auto-generates status email from M365 signals, sends to manager |
+| "Prep me for my next meeting" | Agenda, attendees, recent context, talking points |
 | "Summarize my emails" | Priority email digest |
-| "What did [person] say?" | Search Teams/email for communications from a person |
+| "What did [person] say?" | Search Teams + email for anyone's messages |
 | "What changed since yesterday?" | Delta summary of new emails, chats, decisions |
 
-## File Structure
+---
+
+## FILE STRUCTURE (for your reference)
 
 ```
 .github/
-  agents/chief-of-staff.agent.md    -- Agent definition (the brain)
+  agents/chief-of-staff.agent.md    -- Agent brain (personality, tools, examples)
   skills/daily-status-email/SKILL.md -- Status email generation skill
-  prompts/feedcontext.prompt.md      -- Context enrichment prompt
-  copilot-instructions.md            -- This file (auto-read by GHC)
+  prompts/feedcontext.prompt.md      -- Auto-discover config from live M365 data
+  copilot-instructions.md            -- THIS FILE (you auto-read this)
 .vscode/
-  mcp.template.json                  -- MCP server definitions (template)
-  mcp.json                           -- Your local MCP config (gitignored, created by setup.ps1)
+  mcp.template.json                  -- MCP server template
+  mcp.json                           -- User's MCP config (gitignored)
 config/
-  user-context.template.yaml         -- User config template (committed)
-  user-context.yaml                  -- Your personal config (gitignored)
+  user-context.template.yaml         -- Config template
+  user-context.yaml                  -- User's personal config (gitignored)
 docs/
   setup-guide.md                     -- Detailed setup walkthrough
 setup.ps1                            -- One-command setup script

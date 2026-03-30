@@ -4,21 +4,22 @@ A **GitHub Copilot Chat agent** that connects to your Microsoft 365 work context
 personal Chief of Staff -- triaging emails, prepping meetings, drafting status updates, and
 searching your work history. All from the Copilot Chat panel.
 
-## 30-Second Setup
+## Getting Started
 
+**Step 1:** Clone this repo and open it in VS Code:
 ```powershell
 git clone https://github.com/HashwanthVen/chief-of-staff.git
-cd chief-of-staff
-.\setup.ps1
-code .
+code chief-of-staff
 ```
 
-Then in Copilot Chat: `@chief-of-staff Daily triage`
+**Step 2:** In the Copilot Chat panel, type:
+```
+Set me up
+```
 
-**That's it.** The setup script handles everything. VS Code auto-discovers the MCP servers.
-
-> **Even easier:** Just paste the repo URL into GitHub Copilot Chat and say
-> "Help me set up this repo" -- Copilot reads the instructions and walks you through it.
+**That's it.** Copilot reads the setup instructions automatically, runs everything for you,
+asks you a few questions (your name, email, manager), and connects to your M365.
+You'll need your **Power Platform Environment ID** -- Copilot will walk you through finding it.
 
 ## What It Does
 
